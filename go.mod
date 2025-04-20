@@ -1,4 +1,4 @@
-module deeplapi
+module godeeplapi
 
 go 1.24
 

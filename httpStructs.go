@@ -1,4 +1,6 @@
-package go_deeplapi
+package godeeplapi
+
+import "io"
 
 // TranslationRequest represents parameters for a translation API request.
 // It contains all available options for customizing the translation output.

@@ -1,4 +1,4 @@
-package go_deeplapi
+package godeeplapi
 
 type Config struct {
 	IsPro         bool
