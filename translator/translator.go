@@ -15,7 +15,7 @@ type Translator struct {
 	Config godeeplapi.Config
 }
 
-func (tr *Translator) Translate(request godeeplapi.TranslationRequest) ([]string, error) {
+func (tr *Translator) Translate(request TranslationRequest) ([]string, error) {
 
 	// Check again if the token is still empty after init
 	if tr.Config.DeeplApiToken == "" {
@@ -64,7 +64,7 @@ func (tr *Translator) Translate(request godeeplapi.TranslationRequest) ([]string
 		return nil, err
 	}
 
-	var response godeeplapi.TranslationResponse
+	var response translationResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (tr *Translator) Translate(request godeeplapi.TranslationRequest) ([]string
 	log.Printf("Translations: %v", translations)
 	return translations, nil
 }
-func (tr *Translator) TranslateFile(req godeeplapi.FileTranslationRequest, path string) ([]byte, error) {
+func (tr *Translator) TranslateFile(req FileTranslationRequest, path string) ([]byte, error) {
 
 	// Create a new multipart writer
 	body := &bytes.Buffer{}
