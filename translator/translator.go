@@ -2,9 +2,9 @@ package translator
 
 import (
 	"bytes"
-	"deeplapi"
 	"encoding/json"
 	"fmt"
+	"godeeplapi"
 	"io"
 	"log"
 	"mime/multipart"
