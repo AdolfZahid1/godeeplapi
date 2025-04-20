@@ -166,8 +166,7 @@ func (tr *Translator) TranslateFile(req godeeplapi.FileTranslationRequest, path 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
-		}
+			log.Printf("error closing response body: %v", err)
 	}(resp.Body)
 
 	// Read the response
