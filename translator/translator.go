@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 )
 
 type Translator struct {
-	Config go_deeplapi.Config
+	Config godeeplapi.Config
 }
 
-func (tr *Translator) Translate(request go_deeplapi.TranslationRequest) ([]string, error) {
+func (tr *Translator) Translate(request godeeplapi.TranslationRequest) ([]string, error) {
 
 	// Check again if the token is still empty after init
 	if tr.Config.DeeplApiToken == "" {
@@ -63,7 +64,7 @@ func (tr *Translator) Translate(request go_deeplapi.TranslationRequest) ([]strin
 		return nil, err
 	}
 
-	var response go_deeplapi.TranslationResponse
+	var response godeeplapi.TranslationResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -79,4 +80,106 @@ func (tr *Translator) Translate(request go_deeplapi.TranslationRequest) ([]strin
 	}
 	log.Printf("Translations: %v", translations)
 	return translations, nil
+}
+func (tr *Translator) TranslateFile(req godeeplapi.FileTranslationRequest, path string) ([]byte, error) {
+
+	// Create a new multipart writer
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Add text fields
+	if req.SourceLang != "" {
+		err := writer.WriteField("source_lang", req.SourceLang)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err := writer.WriteField("target_lang", req.TargetLang)
+	if err != nil {
+		return nil, err
+	}
+	if req.FileName != "" {
+		err := writer.WriteField("filename", req.FileName)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if req.OutputFormat != "" {
+		err := writer.WriteField("output_format", req.OutputFormat)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if req.Formality != "" {
+		err := writer.WriteField("formality", req.Formality)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if req.GlossaryId != "" {
+		err := writer.WriteField("glossary_id", req.GlossaryId)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Add the file
+	fileWriter, err := writer.CreateFormFile("file", path)
+	if err != nil {
+		return nil, fmt.Errorf("error creating form file: %w", err)
+	}
+
+	_, err = io.Copy(fileWriter, req.File)
+	if err != nil {
+		return nil, fmt.Errorf("error copying file data: %w", err)
+	}
+
+	// Close the writer
+	err = writer.Close()
+	if err != nil {
+		return nil, fmt.Errorf("error closing writer: %w", err)
+	}
+
+	// Create the HTTP request
+	var apiUrl string
+	if tr.Config.IsPro {
+		apiUrl = "https://api.deepl.com/v2/document"
+	} else {
+		apiUrl = "https://api-free.deepl.com/v2/document"
+	}
+	httpReq, err := http.NewRequest("POST", apiUrl, body)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", writer.FormDataContentType())
+	httpReq.Header.Set("Authorization", "DeepL-Auth-Key "+tr.Config.DeeplApiToken)
+
+	// Send the request
+	client := &http.Client{}
+
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %w", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	// Read the response
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response: %w", err)
+	}
+
+	// Check for error status
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API error: %s, %s", resp.Status, string(respBody))
+	}
+
+	return respBody, nil
 }
