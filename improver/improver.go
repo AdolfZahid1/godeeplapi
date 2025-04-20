@@ -21,9 +21,9 @@ func (imp *Improver) ImproveText(req RephraseRequest) (string, error) {
 	}
 	var url string
 	if imp.Config.IsPro {
-		url = "https://api.deepl.com/v2/translate"
+		url = "https://api.deepl.com/v2/write/rephrase"
 	} else {
-		url = "https://api-free.deepl.com/v2/translate"
+		url = "https://api-free.deepl.com/v2/write/rephrase"
 	}
 	jsonStr, err := json.Marshal(req)
 	if err != nil {
