@@ -1,4 +1,4 @@
-package godeeplapi
+package translator
 
 import "io"
 
@@ -39,7 +39,7 @@ type TranslationRequest struct {
 	// Sets whether the translated text should lean towards formal or informal language.
 	// This feature is only available for certain target languages.
 	// Setting this parameter with a target language that does not support formality will fail,
-	// unless one of the prefer_... options are used. Use Formality struct for possible options
+	// unless one of the prefer_... options are used. Use FormalityOptions struct for possible options
 	Formality string `json:"formality,omitempty"`
 
 	// Specifies which DeepL model should be used for translation.
@@ -102,7 +102,7 @@ type FileTranslationRequest struct {
 	// Sets whether the translated text should lean towards formal or informal language.
 	// This feature is only available for certain target languages.
 	// Setting this parameter with a target language that does not support formality will fail,
-	// unless one of the prefer_... options are used. Use Formality struct for possible options
+	// unless one of the prefer_... options are used. Use FormalityOptions struct for possible options
 	Formality string `json:"formality,omitempty"`
 
 	// Specify the glossary to use for the translation.
@@ -113,7 +113,7 @@ type FileTranslationRequest struct {
 }
 
 // TranslationResponse represents the response from the translation API.
-type TranslationResponse struct {
+type translationResponse struct {
 	Translations []struct {
 		DetectedSourceLanguage string `json:"detected_source_language"`
 		Text                   string `json:"text"`
@@ -149,8 +149,8 @@ type SplitSentences struct {
 	NoNewLines string `default:"nonewlines"`
 }
 
-// Predefined formality options
-var FormailityOptions = Formality{
+// FormalityOptions Predefined formality options
+var FormalityOptions = Formality{
 	Default:        "default",
 	Formal:         "more",
 	Informal:       "less",
@@ -158,20 +158,20 @@ var FormailityOptions = Formality{
 	PreferInformal: "prefer_less",
 }
 
-// Predefined model type options
+// ModelTypeOptions Predefined model type options
 var ModelTypeOptions = ModelType{
 	Quality:       "quality_optimized",
 	PreferQuality: "prefer_quality_optimized",
 	Latency:       "latency_optimized",
 }
 
-// Predefined tag handling options
+// TagOptions Predefined tag handling options
 var TagOptions = Tag{
 	Xml:  "xml",
 	Html: "html",
 }
 
-// Predefined sentence splitting options
+// SplitSentencesOptions Predefined sentence splitting options
 var SplitSentencesOptions = SplitSentences{
 	No:         "0",
 	Yes:        "1",

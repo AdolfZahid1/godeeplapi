@@ -1,4 +1,4 @@
-package godeeplapi
+package translator
 
 // TargetLanguageCode defines all supported target languages for translation.
 // Each field represents a language code that can be used as a target language.
