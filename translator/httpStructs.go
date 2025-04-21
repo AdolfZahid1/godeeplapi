@@ -119,6 +119,17 @@ type translationResponse struct {
 		Text                   string `json:"text"`
 	} `json:"translations"`
 }
+type documentResponse struct {
+	DocumentId  string `json:"document_id"`
+	DocumentKey string `json:"document_key"`
+}
+type documentStatusResponse struct {
+	DocumentId       string `json:"document_id"`
+	DocumentStatus   string `json:"document_status"`
+	SecondsRemaining int    `json:"seconds_remaining,omitempty"`
+	BilledChars      int    `json:"billed_characters,omitempty"`
+	ErrorMessage     string `json:"error_message,omitempty"`
+}
 
 // Formality defines formality options for translations.
 type Formality struct {
