@@ -1,8 +1,7 @@
-package translator
+package models
 
 // TargetLanguageCode defines all supported target languages for translation.
-// Each field represents a language code that can be used as a target language.
-type TargetLanguageCode struct {
+type targetLanguageCode struct {
 	EnglishUS    string
 	EnglishGB    string
 	Bulgarian    string
@@ -37,9 +36,8 @@ type TargetLanguageCode struct {
 	ChineseHans  string
 }
 
-// TargetLanguage is a predefined singleton instance of TargetLanguageCode.
-// This provides easy access to all supported target language codes.
-var TargetLanguage = TargetLanguageCode{
+// TargetLanguage is a predefined instance of TargetLanguageCode.
+var TargetLanguage = targetLanguageCode{
 	EnglishUS:    "EN-US",
 	EnglishGB:    "EN-GB",
 	Bulgarian:    "BG",
@@ -75,8 +73,7 @@ var TargetLanguage = TargetLanguageCode{
 }
 
 // SourceLanguageCode defines all supported source languages for translation.
-// Each field represents a language code that can be used as a source language.
-type SourceLanguageCode struct {
+type sourceLanguageCode struct {
 	English      string
 	Bulgarian    string
 	Czech        string
@@ -108,9 +105,8 @@ type SourceLanguageCode struct {
 	ChineseSimpl string
 }
 
-// SourceLanguage is a predefined singleton instance of SourceLanguageCode.
-// This provides easy access to all supported source language codes.
-var SourceLanguage = SourceLanguageCode{
+// SourceLanguage is a predefined instance of SourceLanguageCode.
+var SourceLanguage = sourceLanguageCode{
 	English:      "EN",
 	Bulgarian:    "BG",
 	Czech:        "CS",
@@ -140,4 +136,16 @@ var SourceLanguage = SourceLanguageCode{
 	Turkish:      "TR",
 	Ukrainian:    "UK",
 	ChineseSimpl: "ZH",
+}
+
+// SupportedLanguage represents a language supported by DeepL API.
+type SupportedLanguage struct {
+	Language string   `json:"language"`
+	Name     string   `json:"name"`
+	Supports []string `json:"supports,omitempty"`
+}
+
+// LanguagesResponse represents the response from the languages API.
+type LanguagesResponse struct {
+	Languages []SupportedLanguage `json:"languages"`
 }

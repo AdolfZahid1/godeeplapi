@@ -1,60 +1,76 @@
 package tests
 
 import (
-	"deeplapi"
-	"deeplapi/translator"
-	"github.com/joho/godotenv"
-	"log"
+	"context"
+	"github.com/AdolfZahid1/godeeplapi"
+	"github.com/AdolfZahid1/godeeplapi/models"
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
-func TestTranslator_Translate(t *testing.T) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	type fields struct {
-		config go_deeplapi.Config
-	}
+func TestClient_Translate(t *testing.T) {
 	type args struct {
-		request go_deeplapi.TranslationRequest
+		request models.TranslationRequest
 	}
+
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   []string
+		name    string
+		client  *godeeplapi.Client
+		args    args
+		want    []string
+		wantErr bool
 	}{
-		{name: "No API key",
-			fields: fields{config: go_deeplapi.Config{DeeplApiToken: ""}},
+		{
+			name: "No API key",
+			client: godeeplapi.NewClient(
+				"", // Empty API key
+				false,
+			),
 			args: args{
-				request: go_deeplapi.TranslationRequest{
+				request: models.TranslationRequest{
 					Text:       []string{"Test"},
-					TargetLang: go_deeplapi.TargetLanguage.EnglishUS,
+					TargetLang: models.TargetLanguage.EnglishUS,
 				},
 			},
-			want: nil,
+			want:    nil,
+			wantErr: true,
 		},
-		{name: "Translate to german \"Hello, World!\"",
-			fields: fields{config: go_deeplapi.Config{DeeplApiToken: os.Getenv("DEEPL_API_TOKEN")}},
+		{
+			name: "Translate to german \"Hello, World!\"",
+			client: godeeplapi.NewClient(
+				os.Getenv("DEEPL_API_TOKEN"),
+				false,
+			),
 			args: args{
-				request: go_deeplapi.TranslationRequest{
+				request: models.TranslationRequest{
 					Text:       []string{"Hello, World!"},
-					TargetLang: go_deeplapi.TargetLanguage.German,
+					TargetLang: models.TargetLanguage.German,
 				},
 			},
-			want: []string{"Hallo, Welt!"},
+			want:    []string{"Hallo, Welt!"},
+			wantErr: false,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tr := &translator.Translator{
-				Config: tt.fields.config,
+			// Create a context with timeout for each test
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			got, err := tt.client.Translate(ctx, tt.args.request)
+
+			// Check error expectations
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Client.Translate() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if got, _ := tr.Translate(tt.args.request); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Translate() = %v, want %v", got, tt.want)
+
+			// Only check response content if we didn't expect an error
+			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Client.Translate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
