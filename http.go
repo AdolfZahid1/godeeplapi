@@ -7,9 +7,31 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
+	"strings"
 )
 
+// checkAuth verifies if the API key is set
+func (c *Client) checkAuth() error {
+	if c.authKey == "" {
+		return fmt.Errorf("DeepL API token is empty")
+	}
+	return nil
+}
+
+// unmarshalResponse handles JSON unmarshaling with error handling
+func unmarshalResponse(respBody []byte, target interface{}) error {
+	if err := json.Unmarshal(respBody, target); err != nil {
+		return fmt.Errorf("error unmarshaling response: %w", err)
+	}
+	return nil
+}
+
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, body interface{}, headers map[string]string) ([]byte, error) {
+	return c.doRequestWithQuery(ctx, method, endpoint, body, headers, nil)
+}
+
+func (c *Client) doRequestWithQuery(ctx context.Context, method, endpoint string, body interface{}, headers map[string]string, queryParams interface{}) ([]byte, error) {
 	var bodyReader io.Reader
 
 	if body != nil {
@@ -25,6 +47,41 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
+	// Add query parameters
+	if queryParams != nil {
+		q := req.URL.Query()
+
+		// Use reflection to extract struct fields and their values
+		v := reflect.ValueOf(queryParams)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		if v.Kind() == reflect.Struct {
+			t := v.Type()
+			for i := 0; i < v.NumField(); i++ {
+				field := t.Field(i)
+				value := v.Field(i)
+
+				// Get the query parameter name from the json tag, or use field name
+				paramName := field.Name
+				if jsonTag := field.Tag.Get("json"); jsonTag != "" {
+					parts := strings.Split(jsonTag, ",")
+					if parts[0] != "-" {
+						paramName = parts[0]
+					}
+				}
+
+				// Only add non-empty values to query
+				if !value.IsZero() {
+					q.Add(paramName, fmt.Sprintf("%v", value.Interface()))
+				}
+			}
+		}
+
+		req.URL.RawQuery = q.Encode()
+	}
+
 	// Add auth header
 	req.Header.Set("Authorization", "DeepL-Auth-Key "+c.authKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -34,7 +91,7 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 		req.Header.Set(k, v)
 	}
 
-	c.logger.Debug("Sending request to %s", c.baseURL+endpoint)
+	c.logger.Debug("Sending request to %s", req.URL.String())
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -47,7 +104,7 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 		return nil, fmt.Errorf("error reading response: %w", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if !isSuccessStatus(resp.StatusCode) {
 		var errMsg string
 		if len(respBody) > 0 {
 			errMsg = string(respBody)
@@ -66,4 +123,14 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 	}
 
 	return respBody, nil
+}
+
+// Helper function to check if status code indicates success
+func isSuccessStatus(statusCode int) bool {
+	switch statusCode {
+	case http.StatusOK, http.StatusAccepted, http.StatusCreated, http.StatusNoContent:
+		return true
+	default:
+		return false
+	}
 }
