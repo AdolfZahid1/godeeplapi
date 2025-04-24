@@ -1,6 +1,7 @@
 package godeeplapi
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -35,15 +36,25 @@ func WithTimeout(timeout time.Duration) ClientOption {
 	}
 }
 
-// NewClient creates a new DeepL API client
+// NewClient creates a new DeepL API client for v2 API
 func NewClient(apiKey string, isPro bool, opts ...ClientOption) *Client {
-	baseURL := "https://api-free.deepl.com/v2"
+	return newClientWithVersion(apiKey, isPro, "v2", opts...)
+}
+
+// NewClientV3 creates a new DeepL API client for v3 API
+func NewClientV3(apiKey string, isPro bool, opts ...ClientOption) *Client {
+	return newClientWithVersion(apiKey, isPro, "v3", opts...)
+}
+
+// newClientWithVersion is a helper function to create a client with a specific API version
+func newClientWithVersion(apiKey string, isPro bool, version string, opts ...ClientOption) *Client {
+	baseURLPrefix := "https://api-free.deepl.com"
 	if isPro {
-		baseURL = "https://api.deepl.com/v2"
+		baseURLPrefix = "https://api.deepl.com"
 	}
 
 	client := &Client{
-		baseURL:    baseURL,
+		baseURL:    fmt.Sprintf("%s/%s", baseURLPrefix, version),
 		authKey:    apiKey,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
 		logger:     &defaultLogger{},
