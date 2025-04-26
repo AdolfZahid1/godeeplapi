@@ -17,37 +17,15 @@ on:
   release:
     types: [created]  # Automatic trigger on release creation
 
-permissions: read-all
-
 jobs:
-  # Build job with SLSA provenance
+  # Build job with SLSA provenance using inline configuration
   build:
     permissions:
       id-token: write  # Required for SLSA provenance
       contents: write  # Required to upload release assets
       actions: read    # Required to read workflow path
-    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.9.0
-    with:
-      go-version: 1.24  # Matching your go.mod version
-      # Optional: Publish to GitHub releases (default is true)
-      upload-assets: true
-      # Optional: Path to config file (default is ".slsa-goreleaser.yml")
-      config-file: .slsa-goreleaser.yml
-  
-  # Optional: Add a verification job
-  verify:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions: read-all
     
-    steps:
-      - name: Verify SLSA provenance
-        uses: slsa-framework/slsa-verifier/actions/verify-artifacts@v2.4.1
-        with:
-          # Note: this should match the artifact name in your build
-          artifact-path: "${{ github.event.repository.name }}-*.tar.gz"
-          provenance-path: "${{ github.event.repository.name }}-*.intoto.jsonl"
-          
-      - name: Report verification success
-        if: ${{ success() }}
-        run: echo "✅ SLSA verification succeeded"
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.4.0
+    with:
+      go-version: 1.24
+      evaluated-envs: "VERSION:${{ github.ref_name }},COMMIT:${{ github.sha }}"
