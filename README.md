@@ -2,6 +2,10 @@
 
 A lightweight, easy-to-use Go wrapper for the DeepL Translation API that simplifies making translation requests.
 
+## Roadmap
+- Add examples for all methods
+- Make more tests
+  
 ## Features
 
 - Simple interface for translating text using DeepL's powerful machine translation
