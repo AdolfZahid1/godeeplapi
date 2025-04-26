@@ -1,0 +1,71 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow lets you compile your Go project using a SLSA3 compliant builder.
+# This workflow will generate a so-called "provenance" file describing the steps
+# that were performed to generate the final binary.
+# The project is an initiative of the OpenSSF (openssf.org) and is developed at
+# https://github.com/slsa-framework/slsa-github-generator.
+# The provenance file can be verified using https://github.com/slsa-framework/slsa-verifier.
+# For more information about SLSA and how it improves the supply-chain, visit slsa.dev.
+
+name: SLSA Go Releaser
+on:
+  workflow_dispatch:  # Manual trigger for testing
+  release:
+    types: [created]  # Automatic trigger on release creation
+
+permissions: read-all
+
+jobs:
+  # Pre-check job to verify configuration
+  pre-check:
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for .slsa-goreleaser.yml
+        run: |
+          if [ ! -f .slsa-goreleaser.yml ]; then
+            echo "Error: .slsa-goreleaser.yml file not found in repository root."
+            echo "Please create this file following the format at: https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/go/README.md#configuration-file"
+            exit 1
+          fi
+          echo "✅ .slsa-goreleaser.yml configuration file found"
+
+  # Build job with SLSA provenance
+  build:
+    needs: pre-check
+    permissions:
+      id-token: write  # Required for SLSA provenance
+      contents: write  # Required to upload release assets
+      actions: read    # Required to read workflow path
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.9.0
+    with:
+      go-version: 1.24  # Matching your go.mod version
+      # Optional: Publish to GitHub releases (default is true)
+      upload-assets: true
+      # Optional: Path to config file (default is ".slsa-goreleaser.yml")
+      config-file: .slsa-goreleaser.yml
+  
+  # Optional: Add a verification job
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: read-all
+    
+    steps:
+      - name: Verify SLSA provenance
+        uses: slsa-framework/slsa-verifier/actions/verify-artifacts@v2.4.1
+        with:
+          # Note: this should match the artifact name in your build
+          artifact-path: "${{ github.event.repository.name }}-*.tar.gz"
+          provenance-path: "${{ github.event.repository.name }}-*.intoto.jsonl"
+          
+      - name: Report verification success
+        if: ${{ success() }}
+        run: echo "✅ SLSA verification succeeded"
