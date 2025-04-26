@@ -1,0 +1,71 @@
+# .slsa-goreleaser.yml
+# Configuration for SLSA Go releaser framework
+
+version: 1
+
+# Main Go module path
+# This matches your project's module name in go.mod
+go_module: github.com/AdolfZahid1/godeeplapi
+
+# Build configurations
+# Specify all the binaries/libraries to build
+builds:
+  - id: godeeplapi-binary
+    # Main package to build
+    main: ./
+    # Binary name (defaults to directory name)
+    binary: godeeplapi
+    # GOOS list
+    goos:
+      - linux
+      - darwin
+      - windows
+    # GOARCH list
+    goarch:
+      - amd64
+      - arm64
+    # Set build flags
+    flags:
+      - -trimpath
+    # Set ldflags
+    ldflags:
+      - -s -w
+    # Environment variables to set during build
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+
+# Archives configuration
+# This will create .tar.gz archives and .zip files for Windows
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macOS
+      {{- else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+
+# Checksum configuration
+# Creates a checksums.txt file with SHA-256 hashes of all artifacts
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+# Snapshot settings
+# For development builds outside of releases
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+# Changelog settings
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
