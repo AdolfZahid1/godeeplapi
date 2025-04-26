@@ -140,9 +140,9 @@ var SourceLanguage = sourceLanguageCode{
 
 // SupportedLanguage represents a language supported by DeepL API.
 type SupportedLanguage struct {
-	Language string   `json:"language"`
-	Name     string   `json:"name"`
-	Supports []string `json:"supports,omitempty"`
+	Language          string `json:"language"`
+	Name              string `json:"name"`
+	SupportsFormality bool   `json:"supports_formality,omitempty"`
 }
 
 // LanguagesResponse represents the response from the languages API.
