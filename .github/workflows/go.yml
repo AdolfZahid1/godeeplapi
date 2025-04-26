@@ -11,8 +11,6 @@ jobs:
   releases-matrix:
     name: Release Go Binary
     runs-on: ubuntu-latest
-    # Only run the release job when a release is created
-    if: ${{ github.event_name == 'release' }}
     strategy:
       matrix:
         goos: [linux, windows, darwin]
