@@ -1,71 +1,34 @@
-# .slsa-goreleaser.yml
-# Configuration for SLSA Go releaser framework
-
 version: 1
 
-# Main Go module path
-# This matches your project's module name in go.mod
-go_module: github.com/AdolfZahid1/godeeplapi
+# List of env variables used during compilation.
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
 
-# Build configurations
-# Specify all the binaries/libraries to build
-builds:
-  - id: godeeplapi-binary
-    # Main package to build
-    main: ./
-    # Binary name (defaults to directory name)
-    binary: godeeplapi
-    # GOOS list
-    goos:
-      - linux
-      - darwin
-      - windows
-    # GOARCH list
-    goarch:
-      - amd64
-      - arm64
-    # Set build flags
-    flags:
-      - -trimpath
-    # Set ldflags
-    ldflags:
-      - -s -w
-    # Environment variables to set during build
-    env:
-      - CGO_ENABLED=0
-      - GO111MODULE=on
+# Flags for the compiler.
+flags:
+  - -trimpath
+  - -tags=netgo
 
-# Archives configuration
-# This will create .tar.gz archives and .zip files for Windows
-archives:
-  - format_overrides:
-      - goos: windows
-        format: zip
-    name_template: >-
-      {{ .ProjectName }}_{{ .Version }}_
-      {{- if eq .Os "darwin" }}macOS
-      {{- else }}{{ .Os }}{{ end }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
+# The OS to compile for. `GOOS` env variable will be set to these values.
+goos:
+  - linux
+  - darwin
+  - windows
 
-# Checksum configuration
-# Creates a checksums.txt file with SHA-256 hashes of all artifacts
-checksum:
-  name_template: 'checksums.txt'
-  algorithm: sha256
+# The architecture to compile for. `GOARCH` env variable will be set to these values.
+goarch:
+  - amd64
+  - arm64
 
-# Snapshot settings
-# For development builds outside of releases
-snapshot:
-  name_template: "{{ .Tag }}-next"
+# Binary output name.
+# {{ .Os }} will be replaced by goos field in the config file.
+# {{ .Arch }} will be replaced by goarch field in the config file.
+binary: godeeplapi-{{ .Os }}-{{ .Arch }}
 
-# Changelog settings
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^ci:'
-      - '^chore:'
+# (Optional) ldflags generated dynamically in the workflow.
+# These use environment variables that are automatically set by the SLSA builder
+ldflags:
+  - "-s -w"
+  - "-X main.Version={{ .Env.VERSION }}"
+  - "-X main.Commit={{ .Env.COMMIT }}"
