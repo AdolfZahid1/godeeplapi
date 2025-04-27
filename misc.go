@@ -25,7 +25,7 @@ func (c *Client) GetUsageAndLimits(ctx context.Context) (*models.UsageAndLimitRe
 }
 
 // GetLanguages returns struct with all supported languages
-func (c *Client) GetLanguages(ctx context.Context) (*models.LanguagesResponse, error) {
+func (c *Client) GetLanguages(ctx context.Context) ([]models.SupportedLanguage, error) {
 	err := c.checkAuth()
 	if err != nil {
 		return nil, err
@@ -34,10 +34,10 @@ func (c *Client) GetLanguages(ctx context.Context) (*models.LanguagesResponse, e
 	if err != nil {
 		return nil, err
 	}
-	var response models.LanguagesResponse
+	var response []models.SupportedLanguage
 	err = json.Unmarshal(respBody, &response)
 	if err != nil {
 		return nil, err
 	}
-	return &response, nil
+	return response, nil
 }

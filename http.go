@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,9 @@ import (
 
 // checkAuth verifies if the API key is set
 func (c *Client) checkAuth() error {
+	if c == nil {
+		return errors.New("client is nil")
+	}
 	if c.authKey == "" {
 		return fmt.Errorf("DeepL API token is empty")
 	}
@@ -33,6 +37,13 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 
 func (c *Client) doRequestWithQuery(ctx context.Context, method, endpoint string, body interface{}, headers map[string]string, queryParams interface{}) ([]byte, error) {
 	var bodyReader io.Reader
+	if c == nil {
+		return nil, errors.New("client is nil")
+	}
+	// Ensure logger is initialized
+	if c.logger == nil {
+		c.logger = NewDefaultLogger()
+	}
 
 	if body != nil {
 		jsonData, err := json.Marshal(body)
