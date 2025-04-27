@@ -184,7 +184,6 @@ func TestClient_GetLanguages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Use the client from the test case
 			c := tt.fields.client
 
 			var handle []models.SupportedLanguage
@@ -192,12 +191,10 @@ func TestClient_GetLanguages(t *testing.T) {
 
 			handle, err = c.GetLanguages(tt.args.ctx)
 
-			// Check error condition using got/want pattern
 			if got, want := err != nil, tt.wantErr; got != want {
 				t.Fatalf("error condition: got=%v, want=%v, err=%v", got, want, err)
 			}
 
-			// Only check response if we didn't expect an error
 			if !tt.wantErr {
 				if got := handle; got == nil {
 					t.Errorf("handle: got=nil, want=non-nil response")
@@ -257,7 +254,6 @@ func TestClient_GetUsageAndLimits(t *testing.T) {
 					t.Fatal("GetUsageAndLimits() returned nil response")
 				}
 
-				// Validate the structure by checking field types/constraints
 				if got.CharLimit < 0 {
 					t.Errorf("CharLimit should be non-negative, got: %d", got.CharLimit)
 				}
