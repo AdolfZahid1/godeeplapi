@@ -17,20 +17,30 @@ type defaultLogger struct {
 	logger *log.Logger
 }
 
-func newDefaultLogger() *defaultLogger {
+// NewDefaultLogger Initialize the logger field with default values
+func NewDefaultLogger() *defaultLogger {
 	return &defaultLogger{
 		logger: log.New(os.Stderr, "", log.LstdFlags),
 	}
 }
 
 func (l *defaultLogger) Debug(msg string, args ...interface{}) {
+	if l.logger == nil {
+		l.logger = log.New(os.Stderr, "", log.LstdFlags)
+	}
 	l.logger.Printf("[DEBUG] "+msg, args...)
 }
 
 func (l *defaultLogger) Info(msg string, args ...interface{}) {
+	if l.logger == nil {
+		l.logger = log.New(os.Stderr, "", log.LstdFlags)
+	}
 	l.logger.Printf("[INFO] "+msg, args...)
 }
 
 func (l *defaultLogger) Error(msg string, args ...interface{}) {
+	if l.logger == nil {
+		l.logger = log.New(os.Stderr, "", log.LstdFlags)
+	}
 	l.logger.Printf("[ERROR] "+msg, args...)
 }

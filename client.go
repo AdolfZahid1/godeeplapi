@@ -57,7 +57,7 @@ func newClientWithVersion(apiKey string, isPro bool, version string, opts ...Cli
 		baseURL:    fmt.Sprintf("%s/%s", baseURLPrefix, version),
 		authKey:    apiKey,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
-		logger:     &defaultLogger{},
+		logger:     NewDefaultLogger(), // Initialize with our new function
 	}
 
 	// Apply options
