@@ -26,47 +26,7 @@ go get github.com/AdolfZahid1e/godeeplapi
 - A DeepL API key (get one at [DeepL API]([https://www.deepl.com/](https://www.deepl.com/en/your-account/keys)))
 
 ## Usage
-
-### Basic Example
-
-```go
-package main
-
-import (
-    "fmt"
-    "log"
-    "os"
-    
-    "godeeplapi/translator"
-)
-
-func main() {
-    // Create a translator with your DeepL API key
-    tr := &translator.Translator{
-        Config: translator.Config{
-            DeeplApiToken: "Your DeepL API Token",
-        },
-    }
-    
-    // Create a translation request
-    request := translator.TranslationRequest{
-        Text:       []string{"Hello, world!", "How are you today?"},
-        TargetLang: translator.TargetLanguage.German,
-    }
-    
-    // Get translations
-    translations, err := tr.Translate(request)
-    if err != nil {
-        log.Fatalf("Translation failed: %v", err)
-    }
-    
-    // Print the translations
-    for i, translation := range translations {
-        fmt.Printf("Original: %s\nTranslation: %s\n\n", 
-                   request.Text[i], translation)
-    }
-}
-```
+see examples 
 
 ### Supported Languages
 
@@ -74,11 +34,11 @@ The wrapper supports all languages provided by the DeepL API:
 
 ```go
 // Examples of target languages
-translator.TargetLanguage.German     // "DE"
-translator.TargetLanguage.EnglishUS  // "EN-US"
-translator.TargetLanguage.Spanish    // "ES"
-translator.TargetLanguage.Japanese   // "JA"
-translator.TargetLanguage.Russian    // "RU"
+models.TargetLanguage.German     // "DE"
+models.TargetLanguage.EnglishUS  // "EN-US"
+models.TargetLanguage.Spanish    // "ES"
+models.TargetLanguage.Japanese   // "JA"
+models.TargetLanguage.Russian    // "RU"
 // ... and many more
 ```
 
@@ -87,8 +47,8 @@ translator.TargetLanguage.Russian    // "RU"
 ```go
 request := translator.TranslationRequest{
     Text:       []string{"Hello, world!"},
-    SourceLang: "EN",            // Optional: specify source language
-    TargetLang: translator.TargetLanguage.French,
+    SourceLang: models.SourceLanguage.English,            // Optional: specify source language
+    TargetLang: models.TargetLanguage.French,
 }
 ```
 
@@ -101,16 +61,6 @@ The main struct for handling translations.
 ```go
 type Translator struct {
     Config Config
-}
-```
-
-### Config
-
-Configuration settings for the DeepL API.
-
-```go
-type Config struct {
-    DeeplApiToken string
 }
 ```
 
